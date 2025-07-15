@@ -8,6 +8,7 @@ bundle:
 targets:
   # Environment-specific configurations for deployment
   dev:
+    default: true
     # Development environment configuration (default)
     workspace:
       host: https://dbc-d56de9ca-1926.cloud.databricks.com/     # Explicit workspace host for dev
