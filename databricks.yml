@@ -1,0 +1,69 @@
+# Databricks Asset Bundle configuration for deployment
+# This file defines the bundle, environments, and jobs for production workflows.
+
+bundle:
+  # Name and description for this bundle deployment
+  name: pb_test_bundle  # Unique, descriptive bundle name for ByteBandits05/pb_test
+
+targets:
+  # Environment-specific configurations for deployment
+  dev:
+    # Development environment configuration (default)
+    workspace:
+      host: https://dbc-d56de9ca-1926.cloud.databricks.com/     # Explicit workspace host for dev
+      root_path: /Workspace/pb_test                # Explicit root path; always /Workspace/<Repo Name>
+  qa:
+    # Quality Assurance environment configuration
+    workspace:
+      host: https://dbc-d56de9ca-1926.cloud.databricks.com/      # Explicit workspace host for QA
+      root_path: /Workspace/pb_test                # Explicit root path; always /Workspace/<Repo Name>
+  prod:
+    # Production environment configuration
+    workspace:
+      host: https://dbc-d56de9ca-1926.cloud.databricks.com/   # Explicit workspace host for production
+      root_path: /Workspace/pb_test                # Explicit root path; always /Workspace/<Repo Name>
+
+resources:
+  jobs:
+    pytest:
+      # Job for running Pytest-based notebook tests
+      name: pytest
+      # List of tasks for this job
+      tasks:
+        - task_key: run_pytest
+          notebook_task:
+            # Explicit path to the pytest notebook
+            notebook_path: /Workspace/pb_test/files/pytest/test_file
+          # Timeout for the task (in seconds)
+          timeout_seconds: 3600
+      # Enable job queueing and set performance target
+      queue:
+        enabled: true
+      performance_target: STANDARD
+      # Tags for environment and job type
+      tags:
+        environment: ${bundle.target}    # Set environment dynamically for all targets
+        job_type: pytest                # Type of job for tracking
+    smoke_test:
+      # Job for running smoke test notebooks
+      name: smoke_test
+      tasks:
+        - task_key: run_smoke_test
+          notebook_task:
+            # Explicit path to the smoke test notebook
+            notebook_path: /Workspace/pb_test/files/smoketest/smoke_test
+          timeout_seconds: 1800
+      queue:
+        enabled: true
+      performance_target: STANDARD
+      tags:
+        environment: ${bundle.target}
+        job_type: smoke_test
+
+# ------------------------------------------------------------------------
+# SECTION COMMENTS
+# - 'bundle': Names this deployment bundle for clarity in CI/CD and audit.
+# - 'targets': Defines three explicit environments, each with a unique host and a root_path always set to /Workspace/<Repo Name>.
+# - 'resources.jobs': Lists all jobs to be deployed with the bundle, making each job and its notebook path explicit for transparency.
+# - Each job contains a single notebook_task, showing the full workspace hierarchy in notebook_path for easy reference and production clarity.
+# - Tags and timeouts are set per job for robust scheduling and monitoring.
